@@ -1,7 +1,6 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
@@ -12,7 +11,7 @@ public class Main {
 		  String user = "root";
 		  String password = "B00lean_2022";
 		  Scanner s=new Scanner(System.in);
-		  
+		
 		 
 		
 		  try (Connection con = DriverManager.getConnection(url, user, password)){
@@ -21,31 +20,34 @@ public class Main {
 			  String email=s.nextLine();
 			  System.out.print("Inserisci la tua password: ");
 			  String pwd=s.nextLine();*/
+			  con.setAutoCommit(false);
 			  
-			  String sql="SELECT employee_id,count(maintenance_work_id) as numero_lavori "
-			  		+ "FROM employee_maintenance_work "
-			  		+ "GROUP BY employee_id";
+			  
+			  String sql="update airline_employee SET layoff_date=current_date() "+
+					  "where id=?";
 			 
 			  try(PreparedStatement ps=con.prepareStatement(sql)) {
-				 // ps.setString(1, email);
-				 // ps.setString(2, pwd);
-				  //qui posso utilizzare il PreparedStatement
-				  try(ResultSet rs =ps.executeQuery()) {
-					//qui posso utilizzare il ResultSet
-					  System.out.println("IMPIEGATO\t\tLAVORI");
-					  while (rs.next()) { //se c'è qualcosa da leggere
-						  System.out.println(
-								  rs.getInt("employee_id") +"\t\t\t"+
-								  rs.getInt("numero_lavori"));
-						 					  
-					  } 
-				  }
-				  
+				  ps.setInt(1, 31);			
+				  ps.executeUpdate();
 			  }
+			  
+			  //qui si verificherà un errore
+			  sql="insert into airline_employee(employee_id, airline_id, hiring_date)"
+			  		+ " Values(?, ?, current_date()) ";
+			 
+			  try(PreparedStatement ps=con.prepareStatement(sql)) {
+				  ps.setInt(1, 9);		
+				  ps.setInt(2, 270);
+				  ps.executeUpdate();
+			  }
+			  con.commit();
+			  System.out.println("Trasferimento effettuato");
 		  } catch (SQLException ex) {
+			// con.rollback();
 		     ex.printStackTrace();
 		  }
-
-	}
+		  s.close();
+		}
+	
 
 }
